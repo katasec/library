@@ -7,8 +7,7 @@ import (
 )
 
 var (
-	spoke_names = []string{"mgmt", "dev", "uat", "prod"}
-	location    = "SouthEastAsia"
+	location = "SouthEastAsia"
 )
 
 func RunPulumi() {
