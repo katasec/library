@@ -1,23 +1,16 @@
 # Overview
 
-Select Stack
+
+Create stack
 
 ```
-pulumi stack init katasec/katasec-azure-base/dev
-pulumi stack select katasec/katasec-azure-base/dev
+make up
 ```
 
-Run pulumi
+Destroy stack
 
 ```
-pulumi up
-```
-
-Delete Stack
-
-```
-pulumi destroy
-pulumi stack rm katasec/dev
+make destroy
 ```
 
 
