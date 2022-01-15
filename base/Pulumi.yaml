@@ -1,0 +1,4 @@
+name: katasec-azure-base
+runtime: go
+description: Azure base module from TF
+
