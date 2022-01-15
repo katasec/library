@@ -4,5 +4,5 @@ up:
 	pulumi up -y
 
 destroy:
-	pulumi destroy -y
-	pulumi stack rm katasec/dev
+	pulumi destroy -y || true
+	pulumi stack rm katasec/dev || true

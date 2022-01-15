@@ -12,7 +12,7 @@ var (
 
 func RunPulumi() {
 	pulumi.Run(func(ctx *pulumi.Context) error {
-		return doStuff(ctx)
+		return createStuff(ctx)
 	})
 }
 
@@ -20,7 +20,7 @@ func main() {
 	RunPulumi()
 }
 
-func doStuff(ctx *pulumi.Context) error {
+func createStuff(ctx *pulumi.Context) error {
 
 	groupNames := []string{"group1", "group2", "group3"}
 
