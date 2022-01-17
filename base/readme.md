@@ -15,11 +15,11 @@ make destroy
 
 
 
-## Notes from our TF
+# What this module should do 
 
 This `base` module needs to create:
 
-|-|-|-|-|
+
 |Resource Group | Storage Account | Container Name | Remarks |
 |-|-|-|-|
 | base | stbase\<company short name\>.\<random string\> | mgmt | For e.g. Storage account name is: `stbaseks12345`|
