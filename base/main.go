@@ -32,17 +32,17 @@ func createStuff(ctx *pulumi.Context) error {
 		}
 
 		// Create an Storage Account in the resource group
-		account, err := createStorageAccount(ctx, resourceGroup, groupName+"sa")
+		_, err = createStorageAccount(ctx, resourceGroup, groupName+"sa")
 		if err != nil {
 			return err
 		}
 
-		// Capture the primary key of the Storage Account into context
-		ctx.Export("primaryStorageKey", pulumi.All(resourceGroup.Name, account.Name).ApplyT(
-			func(args []interface{}) (string, error) {
-				return exportStorageKeys(ctx, args)
-			},
-		))
+		// // Capture the primary key of the Storage Account into context
+		// ctx.Export("primaryStorageKey", pulumi.All(resourceGroup.Name, account.Name).ApplyT(
+		// 	func(args []interface{}) (string, error) {
+		// 		return exportStorageKeys(ctx, args)
+		// 	},
+		// ))
 
 	}
 
@@ -70,6 +70,13 @@ func createStorageAccount(ctx *pulumi.Context, resourceGroup *resources.Resource
 		},
 		Kind: storage.KindStorageV2,
 	})
+
+	// Capture the primary key of the Storage Account into context
+	ctx.Export(groupName+"_primaryStorageKey", pulumi.All(resourceGroup.Name, account.Name).ApplyT(
+		func(args []interface{}) (string, error) {
+			return exportStorageKeys(ctx, args)
+		},
+	))
 
 	return account, err
 }
