@@ -1,4 +1,4 @@
-name: katasec-azure-base
+name: katasec-azure-statestore
 runtime: go
 description: Azure base module from TF
 
