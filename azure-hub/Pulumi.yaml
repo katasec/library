@@ -1,0 +1,3 @@
+name: azure-hub
+runtime: go
+description: Setup Hub Network
