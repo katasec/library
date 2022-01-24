@@ -15,7 +15,7 @@ func createHub(ctx *pulumi.Context) (err error) {
 
 	myrepo := auto.GitRepo{
 		URL:         "https://github.com/katasec/library.git",
-		ProjectPath: "azure-statestore",
+		ProjectPath: "katasec-azure-statestore",
 	}
 
 	stack, _ := auto.UpsertStackRemoteSource(myctx, "katasec/katasec-azure-statestore/dev", myrepo)
@@ -40,7 +40,14 @@ func createHub(ctx *pulumi.Context) (err error) {
 		os.Exit(1)
 	}
 
+	baseRGName, ok := outs["Name"].Value.(string)
+	if !ok {
+		fmt.Println("failed to get NAME output")
+		os.Exit(1)
+	}
+
 	ctx.Export("ID", pulumi.String(baseRGID))
-	ctx.Export("TestThing", pulumi.String("Awesome Value"))
+	ctx.Export("Name", pulumi.String(baseRGName))
+
 	return nil
 }
