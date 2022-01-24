@@ -5,5 +5,5 @@ up:
 
 destroy:
 	pulumi destroy -y || true
-	#pulumi destroy -s katasec/katasec-azure-statestore/dev || true
+	#pulumi destroy -s katasec/azure-statestore/dev || true
 	pulumi stack rm katasec/katasec-azure-statestore/dev || true

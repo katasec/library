@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/pulumi/pulumi/sdk/v3/go/auto"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
@@ -14,10 +15,11 @@ func createHub(ctx *pulumi.Context) (err error) {
 
 	myrepo := auto.GitRepo{
 		URL:         "https://github.com/katasec/library.git",
-		ProjectPath: "azure-base-resourcegroups",
+		ProjectPath: "azure-statestore",
 	}
 
-	stack, _ := auto.UpsertStackRemoteSource(myctx, "katasec/azure-base-resourcegroups/dev", myrepo)
+	stack, _ := auto.UpsertStackRemoteSource(myctx, "katasec/katasec-azure-statestore/dev", myrepo)
+
 	_, err = stack.Refresh(myctx)
 	if err != nil {
 		fmt.Print("Could not refresh stack !")
@@ -26,8 +28,19 @@ func createHub(ctx *pulumi.Context) (err error) {
 		fmt.Print("Refreshed stack !")
 	}
 
-	//ctx.Export("ResourceCount", pulumi.String(stack.Name()))
+	outs, err := stack.Outputs(myctx)
+	if err != nil {
+		fmt.Printf("failed to get  outputs: %v\n", err)
+		os.Exit(1)
+	}
 
+	baseRGID, ok := outs["ID"].Value.(string)
+	if !ok {
+		fmt.Println("failed to get ID output")
+		os.Exit(1)
+	}
+
+	ctx.Export("ID", pulumi.String(baseRGID))
 	ctx.Export("TestThing", pulumi.String("Awesome Value"))
 	return nil
 }
