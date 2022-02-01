@@ -9,8 +9,14 @@ var (
 )
 
 func RunPulumi() {
+
+	request := CreateVNETHub{
+		VNETName:        "hub",
+		AddressPrefixes: []string{"10.0.0.0/16"},
+	}
+
 	pulumi.Run(func(ctx *pulumi.Context) error {
-		return createHub(ctx)
+		return createHub(ctx, request)
 	})
 }
 
