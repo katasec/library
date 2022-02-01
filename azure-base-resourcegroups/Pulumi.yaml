@@ -1,3 +1,0 @@
-name: azure-base-resourcegroups
-runtime: go
-description: Setup base resource groups for Virtual Data Centre
