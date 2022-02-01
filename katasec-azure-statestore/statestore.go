@@ -42,9 +42,10 @@ func createStateStore(ctx *pulumi.Context) (err error) {
 		return err
 	}
 
-	ctx.Export("ID", rgName.ID())
-	ctx.Export("URN", rgName.URN())
-	ctx.Export("Name", rgName.Name)
+	// Output Resource Group Details
+	ctx.Export("BaseRG_ID", rgName.ID())
+	ctx.Export("BaseRG_URN", rgName.URN())
+	ctx.Export("BaseRG_Name", rgName.Name)
 
 	// Create Storage Account for State Store
 	stAccountName := "st" + request.companyShortName
