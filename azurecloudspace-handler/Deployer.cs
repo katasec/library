@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Pulumi;
 using ArkServer.Entities.Azure;
 
@@ -28,6 +25,7 @@ public static class Deployer
         }
 
         exports.Add("Hello", "World");
+        exports.Add("Checking", "Update");
         return exports;
     }
 }
