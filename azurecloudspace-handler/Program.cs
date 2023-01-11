@@ -1,5 +1,5 @@
 ﻿
 return await Pulumi.Deployment.RunAsync(() =>
 {
-    return AzureCloudspaceHandler.Deployer.Start();
+    return AzureCloudspaceHandler.Handler.Start();
 });

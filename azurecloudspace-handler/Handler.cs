@@ -6,7 +6,7 @@ using Resources = Pulumi.AzureNative.Resources;
 
 namespace AzureCloudspaceHandler;
 
-public static class Deployer
+public static class Handler
 {
 
     static AzureCloudspace GetConfig()
