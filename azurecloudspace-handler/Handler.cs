@@ -32,7 +32,10 @@ public static class Handler
 
         var cfg = GetConfig();
 
-        var resourceGroup = new Resources.ResourceGroup(cfg.Name);
+        var hubRg = new Resources.ResourceGroup(cfg.Name, new()
+        {
+            Tags= { { "ark:managed", "true" }},
+        });
 
 
         exports.Add("Hello", "World");
