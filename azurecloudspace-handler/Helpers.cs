@@ -244,6 +244,7 @@ public static partial class Handler
         {
             Name = peeringName,
             VirtualNetworkPeeringName = peeringName,
+            VirtualNetworkName= srcNet.Name,
             ResourceGroupName = srcGroup.Name,
 
             AllowForwardedTraffic= true,
