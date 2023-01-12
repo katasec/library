@@ -89,7 +89,7 @@ public static partial class Handler
         PeerNetworks(pulumiUrn1, hubRg, hubVnet, spokeVnet);
 
         // Peer spoke with hub
-        var pulumiUrn2 = "${spoke.Name}-to-hub";
+        var pulumiUrn2 = $"{spoke.Name}-to-hub";
         PeerNetworks(pulumiUrn2, spokeRg, spokeVnet, hubVnet);
 
         return Tuple.Create(spokeRg,spokeVnet);
