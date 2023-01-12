@@ -99,10 +99,7 @@ public static partial class Handler
     {
         var exports = new Dictionary<string, object?>();
 
-        CreateHub();
-
-        exports.Add("Hello", "World");
-        exports.Add("Checking", "Update");
+        CreateAzureSpace();
         return exports;
     }
 
