@@ -6,7 +6,7 @@ namespace AzureCloudspaceHandler;
 
 public static partial class Handler
 {
-    public static readonly AzureCloudspace ConfigData = new AzureCloudspace();
+    public static readonly AzureCloudspace? ConfigData = new();
 
     /// <summary>
     /// The constructor reads pulumi config injected by the worker into this handler.
