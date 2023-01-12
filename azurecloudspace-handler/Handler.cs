@@ -48,7 +48,7 @@ public static partial class Handler
             },
             Location = Location,
 
-            VirtualNetworkName = ConfigData.Hub.Name,
+            //VirtualNetworkName = ConfigData.Hub.Name,
             Subnets = hubSubnets
         });
 
@@ -71,7 +71,7 @@ public static partial class Handler
         }
     }
 
-    public static void AddASpoke(VNetInfo spoke, Resources.ResourceGroup hubRg, Network.VirtualNetwork hubVnet, Network.AzureFirewall firewall)
+    public static Tuple<Resources.ResourceGroup,Network.VirtualNetwork> AddASpoke(VNetInfo spoke, Resources.ResourceGroup hubRg, Network.VirtualNetwork hubVnet, Network.AzureFirewall firewall)
     {
         // Create Spoke Resource Group
         var spokeRgName = $"rg-{spoke.Name}";
@@ -79,8 +79,20 @@ public static partial class Handler
 
         // Route to the firewall
         var routeName = $"rt-{spoke.Name}";
-        var spokeRoute = CreateFirewallRoute(spokeRg,firewall, routeName);
+        var fwRoute = CreateFirewallRoute(spokeRg,firewall, routeName);
 
+        // Create VNET with subnets using the FW route and spoke resource group
+        var spokeVnet = CreateVNet(spokeRg, spoke, fwRoute);
+
+        // Peer hub with spoke
+        var pulumiUrn1 = $"hub-to-{spoke.Name}";
+        PeerNetworks(pulumiUrn1, hubRg, hubVnet, spokeVnet);
+
+        // Peer spoke with hub
+        var pulumiUrn2 = "${spoke.Name}-to-hub";
+        PeerNetworks(pulumiUrn2, spokeRg, spokeVnet, hubVnet);
+
+        return Tuple.Create(spokeRg,spokeVnet);
     }
 
     public static Dictionary<string, object?> Start()

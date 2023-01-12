@@ -3,7 +3,7 @@ using System;
 using Pulumi;
 using Network = Pulumi.AzureNative.Network;
 using Resources = Pulumi.AzureNative.Resources;
-
+using System.Collections.Generic;
 
 namespace AzureCloudspaceHandler;
 
@@ -198,8 +198,59 @@ public static partial class Handler
         return routeTable;
     }
 
-    public static void CreateVNet()
+    public static Network.VirtualNetwork CreateVNet(Resources.ResourceGroup spokeRg, VNetInfo spoke, Network.RouteTable routeTable)
     {
 
+        // Define empty subnets list for spoke
+        List<Network.Inputs.SubnetArgs> spokeSubnets = new ();
+
+        // Define required subnets with route to firewall
+        foreach (var subnet in spoke.SubnetsInfo)
+        {
+            var s = new Network.Inputs.SubnetArgs
+            {
+                AddressPrefix = subnet.AddressPrefix,
+                Name = subnet.Name,
+                RouteTable = new Network.Inputs.RouteTableArgs
+                {
+                    Id = routeTable.Id
+                }
+            };
+            spokeSubnets.Add(s); 
+        }
+
+        // Create VNET with above subnets
+        var virtualNetwork = new Network.VirtualNetwork(spoke.Name, new Network.VirtualNetworkArgs
+        {
+            ResourceGroupName = spokeRg.Name,
+            AddressSpace = new Network.Inputs.AddressSpaceArgs
+            {
+                AddressPrefixes = spoke.AddressPrefix,
+            },
+            Location = Location,
+            //VirtualNetworkName = ConfigData.Hub.Name,
+            Subnets = spokeSubnets
+        });
+
+        return virtualNetwork;
+    }
+
+    public static void PeerNetworks(string pulumiUrn, Resources.ResourceGroup srcGroup, Network.VirtualNetwork srcNet, Network.VirtualNetwork dstNet)
+    {
+        var peeringName = $"{srcNet}-to-{dstNet}";    
+        var network = new Network.VirtualNetworkPeering(pulumiUrn, new()
+        {
+            Name = peeringName,
+            VirtualNetworkPeeringName = peeringName,
+            ResourceGroupName = srcGroup.Name,
+
+            AllowForwardedTraffic= true,
+            AllowGatewayTransit= false,
+            AllowVirtualNetworkAccess = true,
+            RemoteVirtualNetwork = new Network.Inputs.SubResourceArgs
+            {
+                Id = dstNet.Id
+            }
+        });
     }
 }
