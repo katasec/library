@@ -196,6 +196,10 @@ public static partial class Handler
             RouteTableName= rtTableName,
             RouteName = "firewall-route",
             NextHopIpAddress = firewall.IpConfigurations.First().Apply(x => x.PrivateIPAddress)
+        },
+        options: new()
+        {
+            DependsOn= new[] { routeTable}
         });
         return routeTable;
     }
