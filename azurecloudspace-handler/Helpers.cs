@@ -190,6 +190,7 @@ public static partial class Handler
         // Add a route to the firewall
         var route = new Network.Route($"{rtTableName}-firewall-route", new()
         {
+            ResourceGroupName= rg.Name,
             AddressPrefix= "0.0.0.0/0",
             NextHopType = "VirtualAppliance",
             RouteTableName= rtTableName,
