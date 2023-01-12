@@ -76,7 +76,7 @@ public static partial class Handler
                             {
                                 "*"
                             },
-                            DestinationAddresses= new[]
+                            TargetFqdns= new[]
                             {
                                 "ghcr.io"
                             }
