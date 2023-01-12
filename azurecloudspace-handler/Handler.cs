@@ -56,7 +56,6 @@ public static partial class Handler
         var firewall = CreateFirewall(hubRg, virtualNetwork);
 
         return Tuple.Create(hubRg, virtualNetwork, firewall);
-        //var subnet = new Network.Subnet()
     }
     /// <summary>
     /// Start creates the azure cloudspace which is essentially hub + one or more spokes

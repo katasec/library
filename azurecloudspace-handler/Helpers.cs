@@ -46,6 +46,7 @@ public static partial class Handler
             Name = "apprules-",
             Priority = 101,
             FirewallPolicyName= firewallPolicy.Name,
+            ResourceGroupName= rg.Name,
             RuleCollections = 
             {
                 new Network.Inputs.FirewallPolicyFilterRuleCollectionArgs
