@@ -239,13 +239,14 @@ public static partial class Handler
 
     public static void PeerNetworks(string pulumiUrn, Resources.ResourceGroup srcGroup, Network.VirtualNetwork srcNet, Network.VirtualNetwork dstNet)
     {
-        var peeringName = $"{srcNet.Name}-to-{dstNet.Name}";    
+        var peeringName = Output.Format($"{srcNet.Name}-to-{dstNet.Name}");    
+
         var network = new Network.VirtualNetworkPeering(pulumiUrn, new()
         {
             Name = peeringName,
             VirtualNetworkPeeringName = peeringName,
-            VirtualNetworkName= srcNet.Name,
             ResourceGroupName = srcGroup.Name,
+            VirtualNetworkName= srcNet.Name,
 
             AllowForwardedTraffic= true,
             AllowGatewayTransit= false,
@@ -253,7 +254,8 @@ public static partial class Handler
             RemoteVirtualNetwork = new Network.Inputs.SubResourceArgs
             {
                 Id = dstNet.Id
-            }
+            },
+            UseRemoteGateways = false
         });
     }
 }
