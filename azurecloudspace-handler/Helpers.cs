@@ -239,7 +239,7 @@ public static partial class Handler
 
     public static void PeerNetworks(string pulumiUrn, Resources.ResourceGroup srcGroup, Network.VirtualNetwork srcNet, Network.VirtualNetwork dstNet)
     {
-        var peeringName = $"{srcNet}-to-{dstNet}";    
+        var peeringName = $"{srcNet.Name}-to-{dstNet.Name}";    
         var network = new Network.VirtualNetworkPeering(pulumiUrn, new()
         {
             Name = peeringName,
