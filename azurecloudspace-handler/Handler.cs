@@ -13,6 +13,7 @@ public static partial class Handler
     public static void CreateAzureSpace()
     {
         var (hubRg, hubVnet, hubFw) = CreateHub();
+        AddSpokes(hubRg, hubVnet, hubFw);
     }
 
     /// <summary>
