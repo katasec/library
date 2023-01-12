@@ -1,26 +1,50 @@
-﻿using System;
-using System.Collections.Generic;
-using Pulumi;
-using ArkServer.Entities.Azure;
+﻿using System.Collections.Generic;
 using Resources = Pulumi.AzureNative.Resources;
-
+using Network = Pulumi.AzureNative.Network;
 namespace AzureCloudspaceHandler;
 
-public static class Handler
+public static partial class Handler
 {
-
-    static AzureCloudspace GetConfig()
+    public static string Location = "westus2";
+    /// <summary>
+    /// The Hub network is not directly visible to the end user. It is, however, implemented behind the scenes.
+    /// </summary>
+    public static void CreateHub()
     {
-        var cfg = new Config();
-        var configData = cfg.GetObject<AzureCloudspace>("arkdata");
-        if (configData == null)
+        // Create hub resource group
+        var hubRg = new Resources.ResourceGroup("rg-hub-", new()
         {
-            Console.WriteLine("Config data from Ark is empty, got null");
-            Environment.Exit(0);
+            Tags= { { "ark:managed", "true" }},
+        });
+
+        // Define subnets for hub
+        List<Network.Inputs.SubnetArgs> hubSubnets = new ();
+        foreach (var subnet in ConfigData.Hub.SubnetsInfo)
+        {
+            var s = new Network.Inputs.SubnetArgs
+            {
+                AddressPrefix = subnet.AddressPrefix,
+                Name = subnet.Name
+            };
+            hubSubnets.Add(s);
         }
 
-        return configData;
+        // Create VNET with above subnets
+        var virtualNetwork = new Network.VirtualNetwork(ConfigData.Hub.Name, new Network.VirtualNetworkArgs
+        {
+            ResourceGroupName = hubRg.Name,
+            AddressSpace = new Network.Inputs.AddressSpaceArgs
+            {
+                AddressPrefixes = ConfigData.Hub.AddressPrefix,
+            },
+            Location = Location,
+
+            VirtualNetworkName = ConfigData.Hub.Name,
+            Subnets = hubSubnets
+        });
+        //var subnet = new Network.Subnet()
     }
+
 
     /// <summary>
     /// Start creates the azure cloudspace which is essentially hub + one or more spokes
@@ -30,15 +54,7 @@ public static class Handler
     {
         var exports = new Dictionary<string, object?>();
 
-        // Get config data with cloudspace details.
-        var cfg = GetConfig();
-
-        // Create hub resource group
-        var hubRg = new Resources.ResourceGroup("rg-hub-", new()
-        {
-            Tags= { { "ark:managed", "true" }},
-        });
-
+        CreateHub();
 
         exports.Add("Hello", "World");
         exports.Add("Checking", "Update");
