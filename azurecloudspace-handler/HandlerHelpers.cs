@@ -6,7 +6,7 @@ namespace AzureCloudspaceHandler;
 
 public static partial class Handler
 {
-    public static readonly AzureCloudspace ConfigData;
+    public static readonly AzureCloudspace ConfigData = new AzureCloudspace();
 
     /// <summary>
     /// The constructor reads pulumi config injected by the worker into this handler.
@@ -14,7 +14,7 @@ public static partial class Handler
     static Handler()
     {
         var cfg = new Config();
-        var ConfigData = cfg.GetObject<AzureCloudspace>("arkdata");
+        ConfigData = cfg.GetObject<AzureCloudspace>("arkdata");
         if (ConfigData == null)
         {
             Console.WriteLine("Config data from Ark is empty, got null");
