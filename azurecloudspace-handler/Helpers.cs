@@ -91,7 +91,7 @@ public static partial class Handler
         return firewallPolicy;
     }
 
-    public static Network.AzureFirewall CreateFirewall(Resources.ResourceGroup rg) 
+    public static Network.AzureFirewall CreateFirewall(Resources.ResourceGroup rg, CustomResourceOptions options = null) 
     {
         // Create a Firewall Policy for assigment later
         var fwPolicy = CreateFirewallPolicy(rg);
@@ -125,6 +125,9 @@ public static partial class Handler
             ResourceGroupName= rg.Name,
             SubnetName = "AzureFirewallSubnet",
             VirtualNetworkName = ConfigData.Hub.Name
+        },new InvokeOptions
+        {
+            
         }).Apply((x) => {
             return x.Id;
          });
@@ -173,7 +176,7 @@ public static partial class Handler
             {
                 Id = fwPolicy.Id
             }
-        });
+        }, options);
 
         return firewall;
     }

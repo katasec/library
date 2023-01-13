@@ -3,6 +3,7 @@ using Resources = Pulumi.AzureNative.Resources;
 using Network = Pulumi.AzureNative.Network;
 using System;
 using ArkServer.Entities.Azure;
+using Pulumi;
 
 namespace AzureCloudspaceHandler;
 
@@ -54,7 +55,11 @@ public static partial class Handler
         });
 
         // Create Firewall
-        var firewall = CreateFirewall(hubRg);
+        CustomResourceOptions options = new()
+        {
+            DependsOn = new() { virtualNetwork}
+        };
+        var firewall = CreateFirewall(hubRg,options);
 
         return Tuple.Create(hubRg, virtualNetwork, firewall);
     }
