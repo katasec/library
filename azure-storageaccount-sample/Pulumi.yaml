@@ -1,3 +1,0 @@
-name: azure-storageaccount-sample
-runtime: go
-description: A minimal Azure Native Go Pulumi program

@@ -1,3 +1,0 @@
-name: blah
-runtime: go
-description: A minimal Azure Native Go Pulumi program

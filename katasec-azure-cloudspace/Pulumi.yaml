@@ -1,3 +1,0 @@
-name: katasec-azure-cloudspace
-runtime: dotnet
-description: A minimal Azure Native C# Pulumi program
