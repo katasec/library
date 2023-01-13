@@ -54,7 +54,7 @@ public static partial class Handler
         });
 
         // Create Firewall
-        var firewall = CreateFirewall(hubRg, virtualNetwork);
+        var firewall = CreateFirewall(hubRg);
 
         return Tuple.Create(hubRg, virtualNetwork, firewall);
     }

@@ -37,7 +37,7 @@ public static partial class Handler
             ResourceGroupName = rg.Name,
             Sku = new Network.Inputs.FirewallPolicySkuArgs{
                 Tier = "Basic"
-            }
+            },
         });
 
         // Add Policy Rule to Firewall Policy
@@ -85,13 +85,13 @@ public static partial class Handler
                 }
 
             }
-        });
+        }, new CustomResourceOptions{DependsOn = firewallPolicy});
 
 
         return firewallPolicy;
     }
 
-    public static Network.AzureFirewall CreateFirewall(Resources.ResourceGroup rg,  Network.VirtualNetwork vnet) 
+    public static Network.AzureFirewall CreateFirewall(Resources.ResourceGroup rg) 
     {
         // Create a Firewall Policy for assigment later
         var fwPolicy = CreateFirewallPolicy(rg);
