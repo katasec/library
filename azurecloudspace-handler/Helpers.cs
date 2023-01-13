@@ -45,7 +45,7 @@ public static partial class Handler
         {
             Name = "apprules-",
             Priority = 101,
-            FirewallPolicyName= firewallPolicy.Name,
+            Id = firewallPolicy.Id,
             ResourceGroupName= rg.Name,
             RuleCollections = 
             {
