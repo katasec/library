@@ -91,7 +91,7 @@ public static partial class Handler
         return firewallPolicy;
     }
 
-    public static Network.AzureFirewall CreateFirewall(Resources.ResourceGroup rg, CustomResourceOptions? options = null) 
+    public static Network.AzureFirewall CreateFirewall(Resources.ResourceGroup rg, Network.VirtualNetwork vnet) 
     {
         // Create a Firewall Policy for assigment later
         var fwPolicy = CreateFirewallPolicy(rg);
@@ -121,25 +121,18 @@ public static partial class Handler
         }); 
 
         // Lookup firewall subnet Id
-        var fwSubnetId = Network.GetSubnet.Invoke(new Network.GetSubnetInvokeArgs{
+        Output<string?> fwSubnetId = Network.GetSubnet.Invoke(new Network.GetSubnetInvokeArgs{
             ResourceGroupName= rg.Name,
             SubnetName = "AzureFirewallSubnet",
-            VirtualNetworkName = ConfigData.Hub.Name
-        },new InvokeOptions
-        {
-            
-        }).Apply((x) => {
-            return x.Id;
-         });
+            VirtualNetworkName = vnet.Name,
+        }).Apply(x=> x.Id);
         
         // Lookup mgmt  subnet Id
-        var mgmtfwSubnetId = Network.GetSubnet.Invoke(new Network.GetSubnetInvokeArgs{
+        Output<string?> mgmtfwSubnetId = Network.GetSubnet.Invoke(new Network.GetSubnetInvokeArgs{
             ResourceGroupName= rg.Name,
             SubnetName = "AzureFirewallManagementSubnet",
-            VirtualNetworkName = ConfigData.Hub.Name
-        }).Apply((x) => {
-            return x.Id;
-         });
+            VirtualNetworkName = vnet.Name
+        }).Apply(x=> x.Id);
 
         // Create Firewall
         var firewall = new Network.AzureFirewall("hubfirewall",new()
@@ -176,7 +169,7 @@ public static partial class Handler
             {
                 Id = fwPolicy.Id
             }
-        }, options);
+        }, new() {DependsOn = vnet});
 
         return firewall;
     }

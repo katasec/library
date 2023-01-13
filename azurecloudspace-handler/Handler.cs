@@ -59,7 +59,7 @@ public static partial class Handler
         {
             DependsOn = new() { virtualNetwork}
         };
-        var firewall = CreateFirewall(hubRg,options);
+        var firewall = CreateFirewall(hubRg,virtualNetwork);
 
         return Tuple.Create(hubRg, virtualNetwork, firewall);
     }
