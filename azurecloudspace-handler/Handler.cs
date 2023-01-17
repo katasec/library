@@ -2,8 +2,9 @@
 using Resources = Pulumi.AzureNative.Resources;
 using Network = Pulumi.AzureNative.Network;
 using System;
-using ArkServer.Entities.Azure;
 using Pulumi;
+using ArkServer.Entities;
+using ArkServer.Entities.Azure;
 
 namespace AzureCloudspaceHandler;
 
@@ -70,13 +71,13 @@ public static partial class Handler
 
     public static void AddSpokes(Resources.ResourceGroup hubRg, Network.VirtualNetwork hubVnet, Network.AzureFirewall firewall)
     {
-        foreach (var spoke in ConfigData.Env)
+        foreach (var spoke in ConfigData.Spokes)
         {
             AddASpoke(spoke, hubRg, hubVnet, firewall);
         }
     }
 
-    public static Tuple<Resources.ResourceGroup,Network.VirtualNetwork> AddASpoke(VNetInfo spoke, Resources.ResourceGroup hubRg, Network.VirtualNetwork hubVnet, Network.AzureFirewall firewall)
+    public static Tuple<Resources.ResourceGroup,Network.VirtualNetwork> AddASpoke(VNetSpec spoke, Resources.ResourceGroup hubRg, Network.VirtualNetwork hubVnet, Network.AzureFirewall firewall)
     {
         // Create Spoke Resource Group
         var spokeRgName = $"rg-{spoke.Name}";

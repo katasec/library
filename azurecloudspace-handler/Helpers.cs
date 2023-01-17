@@ -29,13 +29,14 @@ public static partial class Handler
         }
     }
 
-    public static Network.FirewallPolicy CreateFirewallPolicy(Resources.ResourceGroup rg) 
+    public static Network.FirewallPolicy CreateFirewallPolicy(Resources.ResourceGroup rg)
     {
         // Create a Firewall Policy
         var firewallPolicy = new Network.FirewallPolicy("hub-policy-", new()
         {
             ResourceGroupName = rg.Name,
-            Sku = new Network.Inputs.FirewallPolicySkuArgs{
+            Sku = new Network.Inputs.FirewallPolicySkuArgs
+            {
                 Tier = "Basic"
             },
         });
@@ -47,8 +48,8 @@ public static partial class Handler
             Priority = 101,
             Id = firewallPolicy.Id,
             FirewallPolicyName = firewallPolicy.Name,
-            ResourceGroupName= rg.Name,
-            RuleCollections = 
+            ResourceGroupName = rg.Name,
+            RuleCollections =
             {
                 new Network.Inputs.FirewallPolicyFilterRuleCollectionArgs
                 {
@@ -86,13 +87,13 @@ public static partial class Handler
                 }
 
             }
-        }, new CustomResourceOptions{DependsOn = firewallPolicy});
+        }, new CustomResourceOptions { DependsOn = firewallPolicy });
 
 
         return firewallPolicy;
     }
 
-    public static Network.AzureFirewall CreateFirewall(Resources.ResourceGroup rg, Network.VirtualNetwork vnet) 
+    public static Network.AzureFirewall CreateFirewall(Resources.ResourceGroup rg, Network.VirtualNetwork vnet)
     {
         // Create a Firewall Policy for assigment later
         var fwPolicy = CreateFirewallPolicy(rg);
@@ -100,7 +101,7 @@ public static partial class Handler
         // Create Firewall Management IP (used by Azure)
         var managementIp = new Network.PublicIPAddress("fw-mgmt-ip", new()
         {
-            ResourceGroupName= rg.Name,
+            ResourceGroupName = rg.Name,
             PublicIPAllocationMethod = "Static",
             Sku = new Network.Inputs.PublicIPAddressSkuArgs
             {
@@ -112,100 +113,104 @@ public static partial class Handler
         // Create public IP for firewall inbound/outbound traffic
         var publicIp = new Network.PublicIPAddress("fw-ip", new()
         {
-            ResourceGroupName= rg.Name,
+            ResourceGroupName = rg.Name,
             PublicIPAllocationMethod = "Static",
             Sku = new Network.Inputs.PublicIPAddressSkuArgs
             {
                 Name = "Standard",
                 Tier = "Regional"
             }
-        }); 
+        });
 
         // Lookup firewall subnet Id
-        Output<string?> fwSubnetId = Network.GetSubnet.Invoke(new Network.GetSubnetInvokeArgs{
-            ResourceGroupName= rg.Name,
+        Output<string?> fwSubnetId = Network.GetSubnet.Invoke(new Network.GetSubnetInvokeArgs
+        {
+            ResourceGroupName = rg.Name,
             SubnetName = "AzureFirewallSubnet",
             VirtualNetworkName = vnet.Name,
-        }).Apply(x=> x.Id);
-        
+        }).Apply(x => x.Id);
+
         // Lookup mgmt  subnet Id
-        Output<string?> mgmtfwSubnetId = Network.GetSubnet.Invoke(new Network.GetSubnetInvokeArgs{
-            ResourceGroupName= rg.Name,
+        Output<string?> mgmtfwSubnetId = Network.GetSubnet.Invoke(new Network.GetSubnetInvokeArgs
+        {
+            ResourceGroupName = rg.Name,
             SubnetName = "AzureFirewallManagementSubnet",
             VirtualNetworkName = vnet.Name
-        }).Apply(x=> x.Id);
+        }).Apply(x => x.Id);
 
         // Create Firewall
-        var firewall = new Network.AzureFirewall("hubfirewall",new()
+        var firewall = new Network.AzureFirewall("hubfirewall", new()
         {
-            ResourceGroupName= rg.Name,
+            ResourceGroupName = rg.Name,
             Sku = new Network.Inputs.AzureFirewallSkuArgs
             {
-                Tier= "Basic",
+                Tier = "Basic",
                 Name = "AZFW_VNet"
             },
             IpConfigurations = new Network.Inputs.AzureFirewallIPConfigurationArgs
             {
                 Name = "fwip-configuration",
-                PublicIPAddress = new Network.Inputs.SubResourceArgs{
+                PublicIPAddress = new Network.Inputs.SubResourceArgs
+                {
                     Id = publicIp.Id,
                 },
                 Subnet = new Network.Inputs.SubResourceArgs
                 {
-                   Id = fwSubnetId
-                }  
+                    Id = fwSubnetId
+                }
             },
             ManagementIpConfiguration = new Network.Inputs.AzureFirewallIPConfigurationArgs
             {
                 Name = "mgmtip-configuration",
-                PublicIPAddress = new Network.Inputs.SubResourceArgs{
+                PublicIPAddress = new Network.Inputs.SubResourceArgs
+                {
                     Id = managementIp.Id,
                 },
                 Subnet = new Network.Inputs.SubResourceArgs
                 {
-                   Id = mgmtfwSubnetId
-                }  
+                    Id = mgmtfwSubnetId
+                }
             },
             FirewallPolicy = new Network.Inputs.SubResourceArgs
             {
                 Id = fwPolicy.Id
             }
-        }, new() {DependsOn = vnet});
+        }, new() { DependsOn = vnet });
 
         return firewall;
     }
 
-    public static Network.RouteTable CreateFirewallRoute(Resources.ResourceGroup rg, Network.AzureFirewall firewall ,string rtTableName)
+    public static Network.RouteTable CreateFirewallRoute(Resources.ResourceGroup rg, Network.AzureFirewall firewall, string rtTableName)
     {
         // Create Route Table
         var routeTable = new Network.RouteTable(rtTableName, new()
         {
-            ResourceGroupName= rg.Name,
-            RouteTableName= rtTableName
+            ResourceGroupName = rg.Name,
+            RouteTableName = rtTableName
         });
 
         // Add a route to the firewall
         var route = new Network.Route($"{rtTableName}-firewall-route", new()
         {
-            ResourceGroupName= rg.Name,
-            AddressPrefix= "0.0.0.0/0",
+            ResourceGroupName = rg.Name,
+            AddressPrefix = "0.0.0.0/0",
             NextHopType = "VirtualAppliance",
-            RouteTableName= rtTableName,
+            RouteTableName = rtTableName,
             RouteName = "firewall-route",
             NextHopIpAddress = firewall.IpConfigurations.First().Apply(x => x.PrivateIPAddress)
         },
         options: new()
         {
-            DependsOn= new[] { routeTable}
+            DependsOn = new[] { routeTable }
         });
         return routeTable;
     }
 
-    public static Network.VirtualNetwork CreateVNet(Resources.ResourceGroup spokeRg, VNetInfo spoke, Network.RouteTable routeTable)
+    public static Network.VirtualNetwork CreateVNet(Resources.ResourceGroup spokeRg, VNetSpec spoke, Network.RouteTable routeTable)
     {
 
         // Define empty subnets list for spoke
-        List<Network.Inputs.SubnetArgs> spokeSubnets = new ();
+        List<Network.Inputs.SubnetArgs> spokeSubnets = new();
 
         // Define required subnets with route to firewall
         foreach (var subnet in spoke.SubnetsInfo)
@@ -219,7 +224,7 @@ public static partial class Handler
                     Id = routeTable.Id
                 }
             };
-            spokeSubnets.Add(s); 
+            spokeSubnets.Add(s);
         }
 
         // Create VNET with above subnets
@@ -240,17 +245,17 @@ public static partial class Handler
 
     public static void PeerNetworks(string pulumiUrn, Resources.ResourceGroup srcGroup, Network.VirtualNetwork srcNet, Network.VirtualNetwork dstNet)
     {
-        var peeringName = Output.Format($"{srcNet.Name}-to-{dstNet.Name}");    
+        var peeringName = Output.Format($"{srcNet.Name}-to-{dstNet.Name}");
 
         var network = new Network.VirtualNetworkPeering(pulumiUrn, new()
         {
             Name = peeringName,
             VirtualNetworkPeeringName = peeringName,
             ResourceGroupName = srcGroup.Name,
-            VirtualNetworkName= srcNet.Name,
+            VirtualNetworkName = srcNet.Name,
 
-            AllowForwardedTraffic= true,
-            AllowGatewayTransit= false,
+            AllowForwardedTraffic = true,
+            AllowGatewayTransit = false,
             AllowVirtualNetworkAccess = true,
             RemoteVirtualNetwork = new Network.Inputs.SubResourceArgs
             {
