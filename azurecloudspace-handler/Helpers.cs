@@ -39,6 +39,7 @@ public static partial class Handler
             {
                 Tier = "Basic"
             },
+            
         });
 
         // Add Policy Rule to Firewall Policy
@@ -87,7 +88,7 @@ public static partial class Handler
                 }
 
             }
-        }, new CustomResourceOptions { DependsOn = firewallPolicy });
+        });
 
 
         return firewallPolicy;
