@@ -39,7 +39,7 @@ public static partial class Handler
             {
                 Tier = "Basic"
             },
-            
+
         });
 
         // Add Policy Rule to Firewall Policy
@@ -86,7 +86,6 @@ public static partial class Handler
                         },
                     }
                 }
-
             }
         });
 
@@ -98,6 +97,7 @@ public static partial class Handler
     {
         // Create a Firewall Policy for assigment later
         var fwPolicy = CreateFirewallPolicy(rg);
+
 
         // Create Firewall Management IP (used by Azure)
         var managementIp = new Network.PublicIPAddress("fw-mgmt-ip", new()
@@ -176,7 +176,12 @@ public static partial class Handler
             {
                 Id = fwPolicy.Id
             }
-        }, new() { DependsOn = vnet });
+        }, new CustomResourceOptions
+        {
+            DependsOn= new InputList<Resource> {vnet, fwPolicy}
+        });
+
+
 
         return firewall;
     }

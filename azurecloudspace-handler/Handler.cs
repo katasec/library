@@ -56,10 +56,6 @@ public static partial class Handler
         });
 
         // Create Firewall
-        CustomResourceOptions options = new()
-        {
-            DependsOn = new() { virtualNetwork}
-        };
         var firewall = CreateFirewall(hubRg,virtualNetwork);
 
         return Tuple.Create(hubRg, virtualNetwork, firewall);
