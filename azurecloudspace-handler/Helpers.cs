@@ -29,7 +29,7 @@ public static partial class Handler
         }
     }
 
-    public static Network.FirewallPolicy CreateFirewallPolicy(Resources.ResourceGroup rg)
+    public static Tuple<Network.FirewallPolicy,Network.FirewallPolicyRuleCollectionGroup> CreateFirewallPolicy(Resources.ResourceGroup rg)
     {
         // Create a Firewall Policy
         var firewallPolicy = new Network.FirewallPolicy("hub-policy-", new()
@@ -90,13 +90,13 @@ public static partial class Handler
         });
 
 
-        return firewallPolicy;
+        return Tuple.Create(firewallPolicy,firewallPolicyRuleCollectionGroup);
     }
 
     public static Network.AzureFirewall CreateFirewall(Resources.ResourceGroup rg, Network.VirtualNetwork vnet)
     {
         // Create a Firewall Policy for assigment later
-        var fwPolicy = CreateFirewallPolicy(rg);
+        var (fwPolicy, ruleCollectionGroup) = CreateFirewallPolicy(rg);
 
 
         // Create Firewall Management IP (used by Azure)
@@ -178,7 +178,7 @@ public static partial class Handler
             }
         }, new CustomResourceOptions
         {
-            DependsOn= new InputList<Resource> {vnet, fwPolicy}
+            DependsOn= new InputList<Resource> {vnet, fwPolicy, ruleCollectionGroup}
         });
 
 
