@@ -5,6 +5,7 @@ using System;
 using Pulumi;
 using ArkServer.Entities;
 using ArkServer.Entities.Azure;
+using System.Linq;
 
 namespace AzureCloudspaceHandler;
 
@@ -26,11 +27,11 @@ public static partial class Handler
         // Create hub resource group
         var hubRg = new Resources.ResourceGroup("rg-hub-", new()
         {
-            Tags= { { "ark:managed", "true" }},
+            Tags = { { "ark:managed", "true" } },
         });
 
         // Define subnets for hub
-        List<Network.Inputs.SubnetArgs> hubSubnets = new ();
+        List<Network.Inputs.SubnetArgs> hubSubnets = new();
         foreach (var subnet in ConfigData.Hub.SubnetsInfo)
         {
             var s = new Network.Inputs.SubnetArgs
@@ -56,7 +57,7 @@ public static partial class Handler
         });
 
         // Create Firewall
-        var firewall = CreateFirewall(hubRg,virtualNetwork);
+        var firewall = CreateFirewall(hubRg, virtualNetwork);
 
         return Tuple.Create(hubRg, virtualNetwork, firewall);
     }
@@ -67,13 +68,16 @@ public static partial class Handler
 
     public static void AddSpokes(Resources.ResourceGroup hubRg, Network.VirtualNetwork hubVnet, Network.AzureFirewall firewall)
     {
+        // Output spokes for debug
+        Console.WriteLine("Spokes in config:");
+        ConfigData.Spokes.ToList().ForEach(Console.WriteLine);
         foreach (var spoke in ConfigData.Spokes)
         {
             AddASpoke(spoke, hubRg, hubVnet, firewall);
         }
     }
 
-    public static Tuple<Resources.ResourceGroup,Network.VirtualNetwork> AddASpoke(VNetSpec spoke, Resources.ResourceGroup hubRg, Network.VirtualNetwork hubVnet, Network.AzureFirewall firewall)
+    public static Tuple<Resources.ResourceGroup, Network.VirtualNetwork> AddASpoke(VNetSpec spoke, Resources.ResourceGroup hubRg, Network.VirtualNetwork hubVnet, Network.AzureFirewall firewall)
     {
         // Create Spoke Resource Group
         var spokeRgName = $"rg-{spoke.Name}";
@@ -81,7 +85,7 @@ public static partial class Handler
 
         // Route to the firewall
         var routeName = $"rt-{spoke.Name}";
-        var fwRoute = CreateFirewallRoute(spokeRg,firewall, routeName);
+        var fwRoute = CreateFirewallRoute(spokeRg, firewall, routeName);
 
         // Create VNET with subnets using the FW route and spoke resource group
         var spokeVnet = CreateVNet(spokeRg, spoke, fwRoute);
@@ -94,7 +98,7 @@ public static partial class Handler
         var pulumiUrn2 = $"{spoke.Name}-to-hub";
         PeerNetworks(pulumiUrn2, spokeRg, spokeVnet, hubVnet);
 
-        return Tuple.Create(spokeRg,spokeVnet);
+        return Tuple.Create(spokeRg, spokeVnet);
     }
 
     public static Dictionary<string, object?> Start()
