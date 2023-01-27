@@ -1,0 +1,3 @@
+name: null-handler
+runtime: go
+description: Null resource example
