@@ -1,3 +1,3 @@
-name: hellosuccess-handler
+name: hellosuccess
 runtime: go
 description: HelloWorld Handler
