@@ -9,7 +9,8 @@ Each folder in this repo will contain an independant pulumi program responsible 
 
 | Number | Folder  Name | Description |
 | - | - | - |
-| 1 | azurecloudspace-handler | Creates a cloudspace, part of the initial setup before deploying apps|
+| 1 | azurecloudspace-handler | Creates a `cloudspace` and one ore more `environments` in the azure cloudspace. This is aninitial setup before deploying any infrastructure|
+| 2 | azure-managedcluster-handler | Creates an AKS cluster in an existing cloudspace `environment`|
 
 
 
