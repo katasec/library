@@ -81,7 +81,8 @@ public static partial class Handler
                             },
                             TargetFqdns= new[]
                             {
-                                "ghcr.io"
+                                "ghcr.io",
+                                "mcr.microsoft.com"
                             }
                         },
                     }
