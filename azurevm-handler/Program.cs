@@ -3,6 +3,7 @@ using Pulumi.AzureNative.Resources;
 using Pulumi.AzureNative.Storage;
 using Pulumi.AzureNative.Storage.Inputs;
 using System.Collections.Generic;
+using Pulumi.AzureNative.KeyVault;
 using AzureNative = Pulumi.AzureNative;
 
 
@@ -21,6 +22,7 @@ return await Pulumi.Deployment.RunAsync(() =>
     var hostname = "securevm";
     var diskname = "securevm_disk1";
     var nic_name = "eth1";
+    // var tntid = "1d592f6b-bad4-489c-9f63-7958a128351c"; 
     //var disk-key= "disk-key";
 
     var subnet_args = AzureNative.Network.GetSubnet.Invoke( new()
@@ -64,7 +66,11 @@ return await Pulumi.Deployment.RunAsync(() =>
             ResourceGroupName = rg,
     });
 
-    var diskEncryptionSet = new AzureNative.Compute.DiskEncryptionSet("diskEncryptionSet", new()
+  /*  
+  // This diskEncryptionSet is not being used because the vault requires its identity before creation. There is a chicken
+  // and egg situation. 
+
+  var diskEncryptionSet = new AzureNative.Compute.DiskEncryptionSet("diskEncryptionSet", new()
     {
         ActiveKey = new AzureNative.Compute.Inputs.KeyForDiskEncryptionSetArgs
         {
@@ -85,13 +91,40 @@ return await Pulumi.Deployment.RunAsync(() =>
         ResourceGroupName = rg1,
     });
 
+    */
+
+
+/********************************/
+
+  /*  var Properties = new AzureNative.KeyVault.Inputs.VaultPropertiesArgs
+    {
+        AccessPolicies = new[]
+        {
+                new AzureNative.KeyVault.Inputs.AccessPolicyEntryArgs
+                {
+                    ObjectId = diskEncryptionSet.Id,
+                    Permissions = new AzureNative.KeyVault.Inputs.PermissionsArgs
+                    { 
+                        Keys = {"all"},
+                    },
+                    TenantId = tntid,
+                },
+        }
+        
+    }; */
+
+/*****************/
+
 
 
         var vm = new AzureNative.Compute.VirtualMachine(hostname, new()
         {
             HardwareProfile = new AzureNative.Compute.Inputs.HardwareProfileArgs
             {
-                VmSize = "Standard_D1_v2",
+                // The SKU below does not support host encryption only some SKUs support that 
+                // VmSize = "Standard_D1_v2",
+                
+                VmSize = "Standard_DS2_v2",
             },
             Location = location,
             NetworkProfile = new AzureNative.Compute.Inputs.NetworkProfileArgs
@@ -123,7 +156,7 @@ return await Pulumi.Deployment.RunAsync(() =>
                     ProvisionVMAgent = true,
                 },
             },
-            ResourceGroupName = rg,
+
             StorageProfile = new AzureNative.Compute.Inputs.StorageProfileArgs
             {
                 ImageReference = new AzureNative.Compute.Inputs.ImageReferenceArgs
@@ -140,18 +173,33 @@ return await Pulumi.Deployment.RunAsync(() =>
                     ManagedDisk = new AzureNative.Compute.Inputs.ManagedDiskParametersArgs
                     {
                         
+                        /* //The disk encryption is not being used because of the problem with the creation of it and vault.
                         DiskEncryptionSet = new AzureNative.Compute.Inputs.DiskEncryptionSetParametersArgs
                         {
                             Id = diskEncryptionSet.Id,
-                        },
+                        },                         
+                        */
+                    
 
                         StorageAccountType = "Standard_LRS",
+                        
                     },
                     Name = diskname,
                     DeleteOption = "Delete",
                 },
             },
+
+            
+            // For the below to work you must enable HostEncryption at the subscription as below
+            // *** az feature register --name EncryptionAtHost  --namespace Microsoft.Compute
+
+            SecurityProfile = new AzureNative.Compute.Inputs.SecurityProfileArgs
+            {
+                EncryptionAtHost = true,
+            },
+
             VmName = hostname,
+            ResourceGroupName = rg,
         });
 
 
