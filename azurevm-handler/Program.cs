@@ -22,6 +22,7 @@ return await Pulumi.Deployment.RunAsync(() =>
     var hostname = "securevm";
     var diskname = "securevm_disk1";
     var nic_name = "eth1";
+    var wks_name = "log-analytics-us";
     // var tntid = "1d592f6b-bad4-489c-9f63-7958a128351c"; 
     //var disk-key= "disk-key";
 
@@ -33,15 +34,129 @@ return await Pulumi.Deployment.RunAsync(() =>
 
     });
 
-    var kvault_args = AzureNative.KeyVault.GetVault.Invoke ( new()
+    /*var kvault_args = AzureNative.KeyVault.GetVault.Invoke ( new()
     {
         ResourceGroupName=rg1,
         VaultName =kv_name,
 
+    });*/
+    // var keyvault_id = kvault_args.Apply(y => y.Id); // This vault is not needed anymore because user managed keys will nt be used here
+
+    var analytics_args = AzureNative.OperationalInsights.GetWorkspace.Invoke( new()
+    {
+        ResourceGroupName=rg1,
+        WorkspaceName = wks_name,
     });
 
-    var keyvault_id = kvault_args.Apply(y => y.Id);
+
+    var analytics_id = analytics_args.Apply (s=> s.Id);
     var subnet_id = subnet_args.Apply(x => x.Id);
+
+
+/**************************************************/
+
+    var dataCollectionRule = new AzureNative.Insights.DataCollectionRule("dataCollectionRule", new()
+    {
+        DataCollectionRuleName = "secvmrule",
+        DataFlows = new[]
+        {
+            new AzureNative.Insights.Inputs.DataFlowArgs
+            {
+                Destinations = new[]
+                {
+                    "centralWorkspace",
+                },
+                Streams =
+                {
+                    "Microsoft-Perf",
+                    "Microsoft-Syslog",
+                    "Microsoft-WindowsEvent",
+                },
+            },
+        },
+        DataSources = new AzureNative.Insights.Inputs.DataCollectionRuleDataSourcesArgs
+        {
+            PerformanceCounters = new[]
+            {
+                new AzureNative.Insights.Inputs.PerfCounterDataSourceArgs
+                {
+                    CounterSpecifiers = new[]
+                    {
+                        "\\Processor(_Total)\\% Processor Time",
+                        "\\Memory\\Committed Bytes",
+                        "\\LogicalDisk(_Total)\\Free Megabytes",
+                        "\\PhysicalDisk(_Total)\\Avg. Disk Queue Length",
+                    },
+                    Name = "cloudTeamCoreCounters",
+                    SamplingFrequencyInSeconds = 15,
+                    Streams =
+                    {
+                        "Microsoft-Perf",
+                    },
+                },
+                new AzureNative.Insights.Inputs.PerfCounterDataSourceArgs
+                {
+                    CounterSpecifiers = new[]
+                    {
+                        "\\Process(_Total)\\Thread Count",
+                    },
+                    Name = "appTeamExtraCounters",
+                    SamplingFrequencyInSeconds = 30,
+                    Streams =
+                    {
+                        "Microsoft-Perf",
+                    },
+                },
+            },
+            WindowsEventLogs = new[]
+            {
+                new AzureNative.Insights.Inputs.WindowsEventLogDataSourceArgs
+                {
+                    Name = "cloudSecurityTeamEvents",
+                    Streams =
+                    {
+                        "Microsoft-WindowsEvent",
+                    },
+                    XPathQueries = new[]
+                    {
+                        "Security! ",
+                    },
+                },
+                new AzureNative.Insights.Inputs.WindowsEventLogDataSourceArgs
+                {
+                    Name = "appTeam1AppEvents",
+                    Streams =
+                    {
+                        "Microsoft-WindowsEvent",
+                    },
+                    XPathQueries = new[]
+                    {
+                        "System![System[(Level = 1 or Level = 2 or Level = 3)]]",
+                        "Application!*[System[(Level = 1 or Level = 2 or Level = 3)]]",
+                    },
+                },
+            },
+        },
+        Destinations = new AzureNative.Insights.Inputs.DataCollectionRuleDestinationsArgs
+        {
+            LogAnalytics = new[]
+            {
+                new AzureNative.Insights.Inputs.LogAnalyticsDestinationArgs
+                {
+                    Name = "centralWorkspace",
+                    WorkspaceResourceId = analytics_id,
+                },
+            },
+        },
+        Location = location,
+        ResourceGroupName = rg1,
+    });
+
+
+
+
+/**************************************************/
+
 
     var nic = new AzureNative.Network.NetworkInterface(nic_name, new()
     {
@@ -226,5 +341,13 @@ return await Pulumi.Deployment.RunAsync(() =>
 
     var vm_ext_av = new AzureNative.Compute.VirtualMachineExtension ("IaaSAntimalware", vm_ext_args_av, new CustomResourceOptions { DependsOn = {vm}});
     var vm_ext_am = new AzureNative.Compute.VirtualMachineExtension ("AzureMonitorWindowsAgent", vm_ext_args_am, new CustomResourceOptions { DependsOn = {vm}});
+
+    var dataCollectionRuleAssociation = new AzureNative.Insights.DataCollectionRuleAssociation("dataCollectionRuleAssociation", new()
+    {
+        AssociationName = "secvm_association",
+        DataCollectionRuleId = dataCollectionRule.Id,
+        ResourceUri = vm.Id,
+    });
+
 
 });
