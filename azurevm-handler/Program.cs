@@ -55,21 +55,23 @@ return await Pulumi.Deployment.RunAsync(() =>
 
 /**************************************************/
 
+    
     var dataCollectionRule = new AzureNative.Insights.DataCollectionRule("dataCollectionRule", new()
     {
+        
         DataCollectionRuleName = "secvmrule",
+        
         DataFlows = new[]
         {
             new AzureNative.Insights.Inputs.DataFlowArgs
             {
                 Destinations = new[]
                 {
-                    "centralWorkspace",
+                    wks_name,
                 },
-                Streams =
+                Streams = new InputList<Union<string, AzureNative.Insights.KnownDataFlowStreams>> ()
                 {
                     "Microsoft-Perf",
-                    "Microsoft-Syslog",
                     "Microsoft-WindowsEvent",
                 },
             },
@@ -89,12 +91,15 @@ return await Pulumi.Deployment.RunAsync(() =>
                     },
                     Name = "cloudTeamCoreCounters",
                     SamplingFrequencyInSeconds = 15,
-                    Streams =
-                    {
+                    Streams = new InputList<Union<string, AzureNative.Insights.KnownPerfCounterDataSourceStreams>>(){
+                        
                         "Microsoft-Perf",
-                    },
+                    } 
+                    // {
+                    //     "Microsoft-Perf",
+                    // },
                 },
-                new AzureNative.Insights.Inputs.PerfCounterDataSourceArgs
+                /*new AzureNative.Insights.Inputs.PerfCounterDataSourceArgs
                 {
                     CounterSpecifiers = new[]
                     {
@@ -102,18 +107,18 @@ return await Pulumi.Deployment.RunAsync(() =>
                     },
                     Name = "appTeamExtraCounters",
                     SamplingFrequencyInSeconds = 30,
-                    Streams =
+                    Streams = new InputList<Union<string, AzureNative.Insights.KnownPerfCounterDataSourceStreams>>()
                     {
                         "Microsoft-Perf",
                     },
-                },
+                },*/
             },
             WindowsEventLogs = new[]
             {
                 new AzureNative.Insights.Inputs.WindowsEventLogDataSourceArgs
                 {
                     Name = "cloudSecurityTeamEvents",
-                    Streams =
+                    Streams = new InputList<Union<string, AzureNative.Insights.KnownWindowsEventLogDataSourceStreams>>()
                     {
                         "Microsoft-WindowsEvent",
                     },
@@ -125,7 +130,7 @@ return await Pulumi.Deployment.RunAsync(() =>
                 new AzureNative.Insights.Inputs.WindowsEventLogDataSourceArgs
                 {
                     Name = "appTeam1AppEvents",
-                    Streams =
+                    Streams = new InputList<Union<string, AzureNative.Insights.KnownWindowsEventLogDataSourceStreams>> ()
                     {
                         "Microsoft-WindowsEvent",
                     },
@@ -143,7 +148,7 @@ return await Pulumi.Deployment.RunAsync(() =>
             {
                 new AzureNative.Insights.Inputs.LogAnalyticsDestinationArgs
                 {
-                    Name = "centralWorkspace",
+                    Name = wks_name,
                     WorkspaceResourceId = analytics_id,
                 },
             },
@@ -230,8 +235,6 @@ return await Pulumi.Deployment.RunAsync(() =>
 
 /*****************/
 
-
-
         var vm = new AzureNative.Compute.VirtualMachine(hostname, new()
         {
             HardwareProfile = new AzureNative.Compute.Inputs.HardwareProfileArgs
@@ -253,7 +256,10 @@ return await Pulumi.Deployment.RunAsync(() =>
                     },
                 },
             },
-
+            Identity = new AzureNative.Compute.Inputs.VirtualMachineIdentityArgs
+            {
+                Type = Pulumi.AzureNative.Compute.ResourceIdentityType.SystemAssigned
+            },
             OsProfile = new AzureNative.Compute.Inputs.OSProfileArgs
             {
                 AdminPassword = "Xmiles04$%",
@@ -294,10 +300,7 @@ return await Pulumi.Deployment.RunAsync(() =>
                             Id = diskEncryptionSet.Id,
                         },                         
                         */
-                    
-
-                        StorageAccountType = "Standard_LRS",
-                        
+                        StorageAccountType = "Standard_LRS",                      
                     },
                     Name = diskname,
                     DeleteOption = "Delete",
@@ -347,7 +350,8 @@ return await Pulumi.Deployment.RunAsync(() =>
         AssociationName = "secvm_association",
         DataCollectionRuleId = dataCollectionRule.Id,
         ResourceUri = vm.Id,
+    
     });
 
-
+    
 });
