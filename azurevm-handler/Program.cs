@@ -78,6 +78,35 @@ return await Pulumi.Deployment.RunAsync(() =>
         },
         DataSources = new AzureNative.Insights.Inputs.DataCollectionRuleDataSourcesArgs
         {
+
+            WindowsEventLogs = new[]
+            {
+                new AzureNative.Insights.Inputs.WindowsEventLogDataSourceArgs
+                {
+                    Name = "cloudSecurityTeamEvents",
+                    Streams = new InputList<Union<string, AzureNative.Insights.KnownWindowsEventLogDataSourceStreams>>()
+                    {
+                        "Microsoft-WindowsEvent",
+                    },
+                    XPathQueries = new[]
+                    {
+                        "Security! ",
+                    },
+                },
+                new AzureNative.Insights.Inputs.WindowsEventLogDataSourceArgs
+                {
+                    Name = "appTeam1AppEvents",
+                    Streams = new InputList<Union<string, AzureNative.Insights.KnownWindowsEventLogDataSourceStreams>> ()
+                    {
+                        "Microsoft-WindowsEvent",
+                    },
+                    XPathQueries = new[]
+                    {
+                        "System![System[(Level = 1 or Level = 2 or Level = 3)]]",
+                        "Application!*[System[(Level = 1 or Level = 2 or Level = 3)]]",
+                    },
+                },
+            },
             PerformanceCounters = new[]
             {
                 new AzureNative.Insights.Inputs.PerfCounterDataSourceArgs
@@ -113,34 +142,7 @@ return await Pulumi.Deployment.RunAsync(() =>
                     },
                 },*/
             },
-            WindowsEventLogs = new[]
-            {
-                new AzureNative.Insights.Inputs.WindowsEventLogDataSourceArgs
-                {
-                    Name = "cloudSecurityTeamEvents",
-                    Streams = new InputList<Union<string, AzureNative.Insights.KnownWindowsEventLogDataSourceStreams>>()
-                    {
-                        "Microsoft-WindowsEvent",
-                    },
-                    XPathQueries = new[]
-                    {
-                        "Security! ",
-                    },
-                },
-                new AzureNative.Insights.Inputs.WindowsEventLogDataSourceArgs
-                {
-                    Name = "appTeam1AppEvents",
-                    Streams = new InputList<Union<string, AzureNative.Insights.KnownWindowsEventLogDataSourceStreams>> ()
-                    {
-                        "Microsoft-WindowsEvent",
-                    },
-                    XPathQueries = new[]
-                    {
-                        "System![System[(Level = 1 or Level = 2 or Level = 3)]]",
-                        "Application!*[System[(Level = 1 or Level = 2 or Level = 3)]]",
-                    },
-                },
-            },
+
         },
         Destinations = new AzureNative.Insights.Inputs.DataCollectionRuleDestinationsArgs
         {
@@ -156,8 +158,6 @@ return await Pulumi.Deployment.RunAsync(() =>
         Location = location,
         ResourceGroupName = rg1,
     });
-
-
 
 
 /**************************************************/
@@ -270,9 +270,8 @@ return await Pulumi.Deployment.RunAsync(() =>
                     EnableAutomaticUpdates = true,
                     PatchSettings = new AzureNative.Compute.Inputs.PatchSettingsArgs
                     {
-                        PatchMode = "AutomaticByOS",
+                        PatchMode = "AutomaticByPlatform",
                         AssessmentMode = "AutomaticByPlatform",
-
                     },
                     ProvisionVMAgent = true,
                 },
@@ -321,8 +320,9 @@ return await Pulumi.Deployment.RunAsync(() =>
         });
 
 
-    //This below is one way of creating an extension for a virtual machine by passing the DependsOn argument to the CustomResourceOptions and the vm resource
+    //This below is one way of creating an extensions for a virtual machine by passing the DependsOn argument to the CustomResourceOptions and the vm resource
     // to create a wait on the Virtual machine to be created before the extension can be created in the machine.
+    // The extensions below have been created and their associations are being done below. 
     var vm_ext_args_av = new AzureNative.Compute.VirtualMachineExtensionArgs
     {
         ResourceGroupName = rg,
@@ -342,8 +342,19 @@ return await Pulumi.Deployment.RunAsync(() =>
         EnableAutomaticUpgrade = true
     };
 
+    var vm_ext_args_cs = new AzureNative.Compute.VirtualMachineExtensionArgs
+    {
+        ResourceGroupName = rg,
+        VmName = hostname,
+        Type = "CustomScriptExtension",
+        Publisher = "Microsoft.Compute",  
+        TypeHandlerVersion = "1.1",
+        //EnableAutomaticUpgrade = true /* this is not supported in this extension*/
+    };
+
     var vm_ext_av = new AzureNative.Compute.VirtualMachineExtension ("IaaSAntimalware", vm_ext_args_av, new CustomResourceOptions { DependsOn = {vm}});
     var vm_ext_am = new AzureNative.Compute.VirtualMachineExtension ("AzureMonitorWindowsAgent", vm_ext_args_am, new CustomResourceOptions { DependsOn = {vm}});
+    var vm_ext_cs = new AzureNative.Compute.VirtualMachineExtension ("CustomScriptExtension", vm_ext_args_cs, new CustomResourceOptions { DependsOn = {vm}});
 
     var dataCollectionRuleAssociation = new AzureNative.Insights.DataCollectionRuleAssociation("dataCollectionRuleAssociation", new()
     {
