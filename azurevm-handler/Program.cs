@@ -16,14 +16,14 @@ return await Pulumi.Deployment.RunAsync(() =>
     var rg = "rg-network-assets";
     var rg1 = "rg-security-assets";
     var vnet = "cybercrest-hub-net";
-    var kv_name = "egalvault";
+    var kv_name = "egalvlt";
     var subnet = "snet2";
     var location = "eastus";
     var hostname = "securevm";
     var diskname = "securevm_disk1";
     var nic_name = "eth1";
     var wks_name = "log-analytics-us";
-    // var tntid = "1d592f6b-bad4-489c-9f63-7958a128351c"; 
+    var tntid = "1d592f6b-bad4-489c-9f63-7958a128351c"; 
     //var disk-key= "disk-key";
 
     var subnet_args = AzureNative.Network.GetSubnet.Invoke( new()
@@ -34,12 +34,12 @@ return await Pulumi.Deployment.RunAsync(() =>
 
     });
 
-    /*var kvault_args = AzureNative.KeyVault.GetVault.Invoke ( new()
+    var kvault_args = AzureNative.KeyVault.GetVault.Invoke ( new()
     {
         ResourceGroupName=rg1,
         VaultName =kv_name,
 
-    });*/
+    });
     // var keyvault_id = kvault_args.Apply(y => y.Id); // This vault is not needed anymore because user managed keys will nt be used here
 
     var analytics_args = AzureNative.OperationalInsights.GetWorkspace.Invoke( new()
@@ -362,6 +362,21 @@ return await Pulumi.Deployment.RunAsync(() =>
         DataCollectionRuleId = dataCollectionRule.Id,
         ResourceUri = vm.Id,
     
+    });
+
+    var vm_args =  AzureNative.Compute.GetVirtualMachine.Invoke (new () {
+        ResourceGroupName="rg-network-assets",
+        VmName =vm.Name,
+    });
+
+    var roleAssignment = new AzureNative.Authorization.RoleAssignment("roleAssignment", new()
+    {
+        //PrincipalId = vm_args.Apply(x=> x.Identity),
+        PrincipalId = vm_args.Apply(x => x.Identity.PrincipalId),
+        PrincipalType = "ServicePrincipal",
+        RoleAssignmentName = "05c5a614-a7d6-4502-b150-c2fb455033ff",
+        RoleDefinitionId = "/subscriptions/"+tntid+"/providers/Microsoft.Authorization/roleDefinitions/b86a8fe4-44ce-4948-aee5-eccb2c155cd7",
+        Scope = kvault_args.Apply(x => x.Id),
     });
 
     
