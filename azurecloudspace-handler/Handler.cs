@@ -3,9 +3,8 @@ using Resources = Pulumi.AzureNative.Resources;
 using Network = Pulumi.AzureNative.Network;
 using System;
 using Pulumi;
-using ArkServer.Entities;
-using ArkServer.Entities.Azure;
 using System.Linq;
+using Ark.Entities;
 
 namespace AzureCloudspaceHandler;
 

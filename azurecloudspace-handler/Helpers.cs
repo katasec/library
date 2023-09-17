@@ -1,4 +1,4 @@
-﻿using ArkServer.Entities.Azure;
+﻿using Ark.Entities;
 using System;
 using Pulumi;
 using Network = Pulumi.AzureNative.Network;
