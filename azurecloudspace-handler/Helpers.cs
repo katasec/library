@@ -235,6 +235,7 @@ public static partial class Handler
         }
 
         // Create VNET with above subnets
+        Console.WriteLine("Creating vnet:" + spoke.Name + "...");        
         var virtualNetwork = new Network.VirtualNetwork(spoke.Name, new Network.VirtualNetworkArgs
         {
             ResourceGroupName = spokeRg.Name,

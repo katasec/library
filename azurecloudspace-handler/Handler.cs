@@ -69,7 +69,9 @@ public static partial class Handler
     {
         // Output spokes for debug
         Console.WriteLine("Spokes in config:");
-        ConfigData.Spokes.ToList().ForEach(Console.WriteLine);
+        ConfigData.Spokes.ToList().ForEach(x=>{
+            Console.WriteLine(x.Name);
+        });
         foreach (var spoke in ConfigData.Spokes)
         {
             AddASpoke(spoke, hubRg, hubVnet, firewall);
@@ -80,10 +82,12 @@ public static partial class Handler
     {
         // Create Spoke Resource Group
         var spokeRgName = $"rg-{spoke.Name}";
+        Console.WriteLine("Creating resource group:" + spokeRgName + "...");        
         var spokeRg = new Resources.ResourceGroup(spokeRgName);
 
         // Route to the firewall
         var routeName = $"rt-{spoke.Name}";
+        Console.WriteLine("Creating route:" + routeName + "...");        
         var fwRoute = CreateFirewallRoute(spokeRg, firewall, routeName);
 
         // Create VNET with subnets using the FW route and spoke resource group
