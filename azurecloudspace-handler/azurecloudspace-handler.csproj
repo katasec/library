@@ -8,9 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ArkServer.Entities" Version="0.0.4" />
     <PackageReference Include="Pulumi" Version="3.*" />
     <PackageReference Include="Pulumi.AzureNative" Version="2.7.0" />
+    <PackageReference Include="YamlDotNet" Version="13.7.1" />
   </ItemGroup>
 
 </Project>

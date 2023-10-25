@@ -4,7 +4,7 @@ using Network = Pulumi.AzureNative.Network;
 using System;
 using Pulumi;
 using System.Linq;
-using Ark.Entities;
+using AzureCloudspaceHandler.Models;
 
 namespace AzureCloudspaceHandler;
 
